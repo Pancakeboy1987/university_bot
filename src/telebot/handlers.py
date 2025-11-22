@@ -11,7 +11,7 @@ router = Router()
 async def cmd_start(message: Message):
     await message.answer(
         text="Холла!",
-        reply_markup=kb.settings,
+        reply_markup=await kb.inline_games(),
     )
 
 @router.message(Command("help"))
