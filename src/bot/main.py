@@ -1,7 +1,7 @@
 import asyncio
 import os
 
-from handlers import router
+from src.bot.handlers.common import router
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 
