@@ -1,15 +1,6 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.utils.keyboard import InlineKeyboardButton, InlineKeyboardMarkup
 
-main = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="Каталог", callback_data="catalog")],
-    [InlineKeyboardButton(text="Корзина", callback_data="basket"),
-     InlineKeyboardButton(text="Контакты", callback_data="contacts")],
+inline_functions = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="Вуз по специальности", callback_data="input_city")],
+    [InlineKeyboardButton(text="Специальность по вузу", callback_data="input_city")],
 ])
-
-settings = InlineKeyboardMarkup(
-    inline_keyboard=[
-        [InlineKeyboardButton(text="Youtube", url="https://youtube.com")],
-        [InlineKeyboardButton(text="Twitch", url="https://twitch.tv")],
-        [InlineKeyboardButton(text="Twitter", url="https://twitter.com")],
-    ]
-)
