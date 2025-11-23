@@ -5,7 +5,6 @@ from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 from src.bot.handlers import handlers_router as router
 
-
 async def main():
     load_dotenv()
 

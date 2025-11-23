@@ -1,3 +1,3 @@
-from src.bot.handlers import *
+from aiogram import Router
 
 router = Router()
