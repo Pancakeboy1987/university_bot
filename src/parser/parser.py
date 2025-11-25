@@ -38,9 +38,24 @@ for link in links:
 for i in range(len(links_list)):
     print(names_list[i] + ' - ' + links_list[i])
 
+
+###передае в функцию список с сылками на города
+def takeCity(links_list):
+    cities = []
+    for link in links_list:
+        cities.append(str(link[28:]))
+    return cities[1:]
+
+
+
+
+
 url = ("https://tabiturient.ru")
 
 
+
+
+##функция делает гет запрос с рандомными параметрами, выводит весь список
 def findNap():
     global url
     url_4 = url + "/ajax/ajnap.php"
@@ -64,8 +79,10 @@ naps = findNap()
 
 sorted_naps = BeautifulSoup(naps, 'html.parser')
 
+## мы сортируем по <a> и получаем список ссылок с вложенными элементами
 n_links = sorted_naps.find_all('a')
 
+#в первый список кладем хрефы -  которые мы мщем с помощью in
 nap_link_list = []
 for n_link in n_links:
     if 'href' in n_link.attrs:
@@ -73,6 +90,8 @@ for n_link in n_links:
 
 nap_name_list = []
 
+
+### делаем переменную которая находит все b
 for n_link in n_links:
     f = n_link.find('b')
     f = str(f)
@@ -80,3 +99,49 @@ for n_link in n_links:
 
 for i in range(len(nap_link_list)):
     print(nap_name_list[i] + ' - ' + nap_link_list[i])
+
+
+### функция поиска универов
+def findUni(city):
+    global url
+    url_5 = url + "/ajax/ajvuz1.php"
+
+    data = {
+        'page1': 'city',
+        'page2': city,
+        'vuz': '',
+        'limit': '10000',
+    }
+
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "https://tabiturient.ru/",
+        "X-Requested-With": "XMLHttpRequest"
+    }
+    response = requests.post(url_5, data=data, headers=headers)
+    return response.text
+
+
+#print(uni)
+
+
+###Парсим все универы во всех городах
+def findUnisInCity(links_list):
+    citiesList = takeCity(links_list)
+    for city in citiesList:
+        soup = BeautifulSoup(findUni(city), 'html.parser')
+        print(f'Универы города - {city}')
+        vuz_list = soup.find_all('table', class_='vuzlist p20')
+        for vuz in vuz_list:
+            short_name_tag = vuz.find('span', class_='font3').text
+            long_name_tag = vuz.find('span', class_='font2').text
+            if short_name_tag and long_name_tag:
+                short_name = short_name_tag.strip()
+                full_name = long_name_tag.strip()
+
+                print(f"Кратко: {short_name}")
+                print(f"Полное: {full_name}\n\n")
+        print("-" * 30)
+
+
+findUnisInCity(links_list)
