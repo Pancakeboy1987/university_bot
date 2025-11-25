@@ -1,5 +1,7 @@
 from aiogram.fsm.state import StatesGroup, State
 
+
+# FSM-состояния
 class UserStates(StatesGroup):
     choosing_mode = State()
     waiting_for_city = State()
