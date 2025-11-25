@@ -9,11 +9,14 @@ inline_functions = InlineKeyboardMarkup(inline_keyboard=[
 
 
 async def build_pagination_keyboard(items: list, page: int, item_type: str, items_per_page: int = 5):
-    builder = InlineKeyboardBuilder()
+    builder = InlineKeyboardBuilder() # Объект класса InlineKeyboardBuilder
+
+    # Задаём промежутки для отображения items_per_page страниц
     start_index = page * items_per_page
     end_index = start_index + items_per_page
     current_page_items = items[start_index:end_index]
 
+    # Добавляем кнопки в builder
     for item in current_page_items:
         builder.button(
             text=item["title"],
@@ -24,6 +27,7 @@ async def build_pagination_keyboard(items: list, page: int, item_type: str, item
 
     nav_buttons = []
 
+    # Создание кнопки "влево"
     if page > 0:
         nav_buttons.append(
             InlineKeyboardButton(
@@ -32,6 +36,7 @@ async def build_pagination_keyboard(items: list, page: int, item_type: str, item
             )
         )
 
+    # Создание счётчика страниц
     total_pages = (len(items) + items_per_page - 1) // items_per_page
     nav_buttons.append(
         InlineKeyboardButton(
@@ -40,6 +45,7 @@ async def build_pagination_keyboard(items: list, page: int, item_type: str, item
         )
     )
 
+    # Создание кнопки "вправо"
     if end_index < len(items):
         nav_buttons.append(
             InlineKeyboardButton(
@@ -48,6 +54,7 @@ async def build_pagination_keyboard(items: list, page: int, item_type: str, item
             )
         )
 
+    # Добавление нижних кнопок в builder
     builder.row(*nav_buttons)
 
     return builder.as_markup()
