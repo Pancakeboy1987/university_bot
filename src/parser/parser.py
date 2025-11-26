@@ -35,8 +35,9 @@ for link in links:
     city = str(city)
     names_list.append(city[23:-11])
 
-for i in range(len(links_list)):
-    print(names_list[i] + ' - ' + links_list[i])
+###список городов
+#for i in range(len(links_list)):
+    #print(names_list[i] + ' - ' + links_list[i])
 
 
 ###передае в функцию список с сылками на города
@@ -97,8 +98,10 @@ for n_link in n_links:
     f = str(f)
     nap_name_list.append(f[3:-4])
 
-for i in range(len(nap_link_list)):
-    print(nap_name_list[i] + ' - ' + nap_link_list[i])
+###вывод списка напрвлений
+
+#for i in range(len(nap_link_list)):
+    #print(nap_name_list[i] + ' - ' + nap_link_list[i])
 
 
 ### функция поиска универов
@@ -143,11 +146,51 @@ def findUnisInCity(links_list):
                 print(f"Полное: {full_name}\n\n")
         print("-" * 30)
 
+###вызов функции присылает все вузы по городам
 
-findUnisInCity(links_list)
+#findUnisInCity(links_list)
 
-## нужно будет реализовать функцию поиска направлений по городам
-## нужно чтобы выводились только доступные специальности
-## нужен запрос пост к направлениям
-## нужно сортировать по font1 - там те направления которых нет
 
+
+#здесь я сделал клон функции findNap, но уже с пост запросом - старая нам еще пригодится
+def findNapFixed(city):
+    global url
+    url_4 = url + "/ajax/ajnap.php"
+
+    data = {
+        'page1': 'city',
+        'page2': city,
+        'page3':''
+    }
+
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "https://tabiturient.ru/",
+        "X-Requested-With": "XMLHttpRequest"
+    }
+    response = requests.post(url_4, data=data, headers=headers)
+    return response.text
+
+
+
+def findNapsInCity(links_list):
+    citiesList = takeCity(links_list)
+    for city in citiesList:
+        print(city)
+        soup = BeautifulSoup(findNapFixed(city), 'html.parser')
+        print(f'Направления города - {city}')
+        nap_list = soup.find_all('table', class_='specsh')
+        for nap in nap_list:
+            if nap.find('span', class_='font1')==None:
+                code_tag = nap.find_all('span', class_='font2')[0].text
+                name_tag = nap.find_all('span', class_='font2')[1].text
+                if name_tag and code_tag:
+                    code_name = code_tag.strip()
+                    full_name = name_tag.strip()
+
+                    print(f"код специальности: {code_name}")
+                    print(f"Полное название направления: {full_name}\n\n")
+        print("-" * 30)
+
+###вывод всех направлений по городам
+findNapsInCity(links_list)
