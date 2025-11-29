@@ -1,5 +1,5 @@
 from aiogram.utils.keyboard import InlineKeyboardButton, InlineKeyboardMarkup, InlineKeyboardBuilder
-from src.bot.keyboards.callbacks import NavigationCallback, SelectionCallback
+from src.bot.keyboards.callbacks import NavigationCallback, SelectionCallback, CardsCallback
 
 # Создание инлайн клавы с выбором вариантов для "/start"
 inline_functions = InlineKeyboardMarkup(inline_keyboard=[
@@ -17,12 +17,14 @@ async def build_pagination_keyboard(items: list, page: int, item_type: str, item
     end_index = start_index + items_per_page
     current_page_items = items[start_index:end_index]
 
+    callback_class = NavigationCallback if items_per_page > 1 else CardsCallback
+
     # Добавляем кнопки в builder если создаётся не карточка университета
     if items_per_page > 1:
         for item in current_page_items:
             builder.button(
                 text=item["title"],
-                callback_data=SelectionCallback(item_type=item_type, item_id=item["id"]),
+                callback_data=SelectionCallback(item_type=item_type, item_id=item["id"])
             )
 
         builder.adjust(1)
@@ -35,7 +37,7 @@ async def build_pagination_keyboard(items: list, page: int, item_type: str, item
         nav_buttons.append(
             InlineKeyboardButton(
                 text="◀️",
-                callback_data=NavigationCallback(item_type=item_type, page=page - 1).pack()
+                callback_data=callback_class(item_type=item_type, page=page - 1).pack()
             )
         )
 
@@ -53,7 +55,7 @@ async def build_pagination_keyboard(items: list, page: int, item_type: str, item
         nav_buttons.append(
             InlineKeyboardButton(
                 text="▶️",
-                callback_data=NavigationCallback(item_type=item_type, page=page + 1).pack()
+                callback_data=callback_class(item_type=item_type, page=page + 1).pack()
             )
         )
 
@@ -61,3 +63,4 @@ async def build_pagination_keyboard(items: list, page: int, item_type: str, item
     builder.row(*nav_buttons)
 
     return builder.as_markup()
+

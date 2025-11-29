@@ -4,7 +4,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 import src.bot.keyboards.inline as inline
-from src.bot.keyboards.callbacks import NavigationCallback, SelectionCallback
+from src.bot.keyboards.callbacks import NavigationCallback, SelectionCallback, CardsCallback
 from src.bot.keyboards.inline import build_pagination_keyboard
 from src.bot.states.user_states import UserStates
 from src.bot.keyboards.list_of_unis_and_specs import list_of_specs, list_of_unis
@@ -51,7 +51,7 @@ async def input_city(message: Message, state: FSMContext):
             reply_markup=await inline.build_pagination_keyboard(
                 items=list_of_specs,
                 page=0,
-                item_type="spec"
+                item_type="spec",
             )
         )
     elif data["choosing_mode"] == "Специальность по вузу":
@@ -61,7 +61,7 @@ async def input_city(message: Message, state: FSMContext):
             reply_markup=await inline.build_pagination_keyboard(
                 items=list_of_unis,
                 page=0,
-                item_type="uni"
+                item_type="uni",
             )
         )
 
@@ -75,6 +75,11 @@ async def paginate_unis_of_specs(callback_query: CallbackQuery, callback_data: N
         "spec": list_of_specs,
         "uni": list_of_unis,
     }
+    if callback_query.data == "spec":
+        await state.update_data(selecting_spec=callback_query.data)
+    else:
+        await state.update_data(selecting_uni=callback_query.data)
+
 
     # Проверка на то, что данные правильно считались
     current_items = data_source[callback_data.item_type]
@@ -101,6 +106,35 @@ async def paginate_unis_of_specs(callback_query: CallbackQuery, callback_data: N
 @router.callback_query(SelectionCallback.filter(F.item_type == "spec"))
 async def specs_of_uni(callback_query: CallbackQuery, callback_data: SelectionCallback, state: FSMContext):
     await callback_query.answer()
+    await state.set_state(UserStates.browsing_carousel)
 
     spec_id = callback_data.item_id
-    await callback_query.message.answer(f"Вы выбрали специальность: {spec_id}")
+    await callback_query.message.edit_text(
+        f"Вы выбрали специальность: {spec_id}",
+        reply_markup=await inline.build_pagination_keyboard(
+            items=list_of_unis,
+            page=0,
+            item_type="spec",
+            items_per_page=1
+        )
+    )
+
+
+# noinspection PyTypeChecker
+@router.callback_query(CardsCallback.filter(F.item_type == "spec"))
+async def unis_carousel(callback_query: CallbackQuery, callback_data: CardsCallback, state: FSMContext):
+    await state.update_data()
+
+    keyboard = build_pagination_keyboard(
+        items=list_of_unis,
+        page=callback_data.page,
+        item_type=callback_data.item_type,
+        items_per_page=1
+    )
+
+    try:
+        await callback_query.message.edit_reply_markup(reply_markup=await keyboard)
+    except Exception:
+        pass
+
+    await callback_query.answer()
