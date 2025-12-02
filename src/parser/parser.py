@@ -148,7 +148,7 @@ def findUnisInCity(links_list):
 
 ###вызов функции присылает все вузы по городам
 
-#findUnisInCity(links_list)
+findUnisInCity(links_list)
 
 
 

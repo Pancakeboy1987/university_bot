@@ -14,7 +14,7 @@ router = Router()
 # Хендлер для "/start"
 @router.message(CommandStart())
 async def start_command(message: Message, state: FSMContext):
-    await state.set_state(UserStates.choosing_mode)
+    await state.set_state(UserStates.choosing_mode) # Обращение к 1-му стейту юзера
     await message.answer(
         "Выберите один из вариантов:",
         reply_markup=inline.inline_functions
@@ -25,7 +25,7 @@ async def start_command(message: Message, state: FSMContext):
 @router.callback_query(UserStates.choosing_mode)
 async def input_city(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
-    await state.update_data(choosing_mode=callback_query.data)
+    await state.update_data(choosing_mode=callback_query.data) # Дата полученная с инлайна
     await state.set_state(UserStates.waiting_for_city)
     await callback_query.message.edit_text("Введите полное название города")
 
