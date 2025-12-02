@@ -225,4 +225,4 @@ def findNapsInUni(vuz):
         print()
 
 
-print(findNapsInUni('rudn'))
+print(findNapsInUni('asu'))
