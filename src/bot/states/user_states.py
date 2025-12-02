@@ -7,5 +7,6 @@ class UserStates(StatesGroup):
     waiting_for_city = State()
     selecting_uni = State()
     selecting_spec = State()
-    browsing_carousel = State()
+    browsing_unis_or_specs = State()
+    browsing_unis_cards = State()
     reading_reviews = State()
