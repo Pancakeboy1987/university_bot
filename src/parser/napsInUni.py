@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from __init__ import headers
 
 url = ("https://tabiturient.ru")
 
@@ -31,4 +32,51 @@ def findNapsInUni(vuz):
         print()
 
 
-print(findNapsInUni('asu'))
+print(findNapsInUni('rudn'))
+
+
+### Здесь получаю инфу о каждом направлении
+def requestForInfo(spec_id):
+    global url
+    url9 = url + "/ajax/ajshowmoreinfof2.php"
+    data = {
+        "id": spec_id,
+    }
+    r = requests.post(url9, headers=headers, data=data)
+    soup = BeautifulSoup(r.text, "html.parser")
+    blocks = soup.find_all('div', class_='p40 pm40')
+    subjects = blocks[1].find_all('b', class_='font11')
+    score = blocks[2].find_all('span', class_='font3')
+    print(f'Список предметов егэ для поступления: {subjects[0].get_text()}, {subjects[1].get_text()}, {subjects[2].get_text()}, {subjects[3].get_text()}')
+    print(f'Средний  проходной балл на бюджет - {score[1].get_text()}')
+    print(f'Кол-во бюджетных мест - {score[2].get_text()}')
+    print(f'Средний  балл поступивших на бюджет - {score[3].get_text()}\n')
+
+
+
+
+
+
+
+
+### Здесь будет будем брать id специальности
+### По какой-то причине они не совпадают с id направлений
+### Далее мы просто должны сделать запрос чтобы узнать инфу с модального кона
+def findSpecId(link):
+    r = requests.get(link, headers=headers)
+    soup = BeautifulSoup(r.text, "html.parser")
+    spec_body = soup.find_all("div", class_="mobpaddcard")
+
+    for spec in spec_body:
+        spec_id = str(spec.find('span')['id'])[11::]
+        requestForInfo(spec_id)
+
+
+
+### Сюда вставляем ссылки которые получаем из findNapsInUni
+findSpecId('https://tabiturient.ru/vuzu/rudn/proxodnoi?1002')
+
+
+
+
+
