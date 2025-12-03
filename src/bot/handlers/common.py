@@ -2,19 +2,27 @@ from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
+from sqlalchemy.testing.config import any_async
 
 import src.bot.keyboards.inline as inline
+import src.bot.keyboards.reply as reply
 from src.bot.keyboards.callbacks import NavigationCallback, SelectionCallback, CardsCallback
 from src.bot.keyboards.inline import build_pagination_keyboard
 from src.bot.states.user_states import UserStates
 from src.bot.keyboards.list_of_unis_and_specs import list_of_specs, list_of_unis
 
+
 router = Router()
 
-# Хендлер для "/start"
+# Хендлер для /start (приветствие + реплай клава)
 @router.message(CommandStart())
 async def start_command(message: Message, state: FSMContext):
-    await state.set_state(UserStates.choosing_mode) # Обращение к 1-му стейту юзера
+    await message.answer(
+        "Дароу, это НААААШ бот, я страдаю полной хернёй. Убейте меня😁😁😁",
+        reply_markup=reply.reply_test
+    )
+
+    await state.set_state(UserStates.choosing_mode) # Устанавливаем состояние выбора
     await message.answer(
         "Выберите один из вариантов:",
         reply_markup=inline.inline_functions
@@ -66,7 +74,7 @@ async def input_city(message: Message, state: FSMContext):
         )
 
 
-# Хендлер для пагинации
+# Хендлер для пагинации по списку универов/специальностей
 @router.callback_query(NavigationCallback.filter(F.item_type.in_(["uni", "spec"])))
 async def paginate_unis_of_specs(callback_query: CallbackQuery, callback_data: NavigationCallback, state: FSMContext):
 
@@ -79,7 +87,6 @@ async def paginate_unis_of_specs(callback_query: CallbackQuery, callback_data: N
         await state.update_data(selecting_spec=callback_query.data)
     else:
         await state.update_data(selecting_uni=callback_query.data)
-
 
     # Проверка на то, что данные правильно считались
     current_items = data_source[callback_data.item_type]
@@ -94,9 +101,29 @@ async def paginate_unis_of_specs(callback_query: CallbackQuery, callback_data: N
     )
 
     try:
+        await state.set_state(UserStates.browsing_unis_or_specs)
         await callback_query.message.edit_reply_markup(reply_markup=await keyboard)
     except Exception:
         pass
+
+    await callback_query.answer()
+
+# noinspection PyTypeChecker
+# Хендлер для выбора специальности с about-страницы выбранного университета
+@router.callback_query(SelectionCallback.filter(F.item_type == "uni"))
+async def select_uni(callback_query: CallbackQuery, callback_data: SelectionCallback, state: FSMContext):
+    await state.set_state(UserStates.selecting_spec)
+
+    uni_id = callback_data.item_id
+    await callback_query.message.edit_text(
+        f"Университет под номером: {uni_id}",
+        reply_markup=await inline.build_pagination_keyboard(
+            items=list_of_specs,
+            page=0,
+            item_type="spec",
+            items_per_page=5
+        )
+    )
 
     await callback_query.answer()
 
@@ -105,8 +132,8 @@ async def paginate_unis_of_specs(callback_query: CallbackQuery, callback_data: N
 # Хендлер для вывода карточек (пока без карточек)
 @router.callback_query(SelectionCallback.filter(F.item_type == "spec"))
 async def specs_of_uni(callback_query: CallbackQuery, callback_data: SelectionCallback, state: FSMContext):
-    await callback_query.answer()
-    await state.set_state(UserStates.browsing_carousel)
+    await state.update_data(selecting_spec=callback_query.data)
+    await state.set_state(UserStates.browsing_unis_cards)
 
     spec_id = callback_data.item_id
     await callback_query.message.edit_text(
@@ -118,6 +145,8 @@ async def specs_of_uni(callback_query: CallbackQuery, callback_data: SelectionCa
             items_per_page=1
         )
     )
+
+    await callback_query.answer()
 
 
 # noinspection PyTypeChecker
@@ -137,4 +166,8 @@ async def unis_carousel(callback_query: CallbackQuery, callback_data: CardsCallb
     except Exception:
         pass
 
-    await callback_query.answer()
+
+@router.message(F.text == "Назад")
+async def back(message: Message, state: FSMContext):
+    await message.answer("Пошёл нахуй")
+    pass

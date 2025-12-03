@@ -219,10 +219,13 @@ def findNapsInUni(vuz):
     specs = spec_body.find_all('a')
     for spec in specs:
         link = spec['href']
-        code = str(spec.find('span',class_='font11'))[21:44]
+        code = str(spec.find('span',class_='font11'))[22:44]
         name = str(spec.find('b'))[3:-4]
-        print('Ссылка - ' + link + ',  - ' + code + ' - ' + name)
-        print()
+        print(
+            f"Ссылка: {link}\n"
+            f"Код и уровень: {code}\n"
+            f"Направление: {name}\n"
+        )
 
 
 print(findNapsInUni('asu'))
