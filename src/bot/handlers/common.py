@@ -8,7 +8,7 @@ import src.bot.keyboards.inline as inline
 import src.bot.keyboards.reply as reply
 from src.bot.keyboards.callbacks import NavigationCallback, SelectionCallback, CardsCallback
 from src.bot.keyboards.inline import build_pagination_keyboard
-from src.bot.states.user_states import UserStates
+from src.bot.states.user_states import UserStates, STATES
 from src.bot.keyboards.list_of_unis_and_specs import list_of_specs, list_of_unis
 
 
@@ -22,7 +22,8 @@ async def start_command(message: Message, state: FSMContext):
         reply_markup=reply.reply_test
     )
 
-    await state.set_state(UserStates.choosing_mode) # Устанавливаем состояние выбора
+    await state.update_data(counter=0)
+    await state.set_state(STATES[0]) # Устанавливаем состояние выбора
     await message.answer(
         "Выберите один из вариантов:",
         reply_markup=inline.inline_functions
@@ -33,8 +34,12 @@ async def start_command(message: Message, state: FSMContext):
 @router.callback_query(UserStates.choosing_mode)
 async def input_city(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
+    data = await state.get_data()
+    counter = data.get("counter", 0)  # получаем текущее значение
+    counter += 1
+    await state.update_data(counter=counter)  # сохраняем новое значение
     await state.update_data(choosing_mode=callback_query.data) # Дата полученная с инлайна
-    await state.set_state(UserStates.waiting_for_city)
+    await state.set_state(STATES[counter])
     await callback_query.message.edit_text("Введите полное название города")
 
 
@@ -170,4 +175,5 @@ async def unis_carousel(callback_query: CallbackQuery, callback_data: CardsCallb
 @router.message(F.text == "Назад")
 async def back(message: Message, state: FSMContext):
     await message.answer("Пошёл нахуй")
+
     pass
