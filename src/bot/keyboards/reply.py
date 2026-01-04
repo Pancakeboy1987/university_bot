@@ -7,3 +7,8 @@ reply_test = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True,
 )
+
+kb_back = ReplyKeyboardMarkup(
+    keyboard=[[KeyboardButton(text="Назад")]],
+    resize_keyboard=True
+)

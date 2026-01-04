@@ -10,6 +10,7 @@ from src.bot.keyboards.callbacks import NavigationCallback, SelectionCallback, C
 from src.bot.keyboards.inline import build_pagination_keyboard
 from src.bot.states.user_states import UserStates, STATES
 from src.bot.keyboards.list_of_unis_and_specs import list_of_specs, list_of_unis
+from src.bot.keyboards.reply import kb_back
 
 
 router = Router()
@@ -17,30 +18,54 @@ router = Router()
 # Хендлер для /start (приветствие + реплай клава)
 @router.message(CommandStart())
 async def start_command(message: Message, state: FSMContext):
+    await state.clear()
+    await state.set_state(UserStates.choosing_mode)
     await message.answer(
         "Дароу, это НААААШ бот, я страдаю полной хернёй. Убейте меня😁😁😁",
-        reply_markup=reply.reply_test
     )
 
-    await state.update_data(counter=0)
-    await state.set_state(STATES[0]) # Устанавливаем состояние выбора
+
     await message.answer(
         "Выберите один из вариантов:",
         reply_markup=inline.inline_functions
     )
+
+### Ставим Хэндлер в начало,чтобы остальные имели к нему доступ
+@router.message(F.text == "Назад")
+async def back(message: Message, state: FSMContext):
+    await message.answer("Пошёл нахуй")
+    current_state = await state.get_state()
+    data = await state.get_data()
+    match current_state:
+        case None:
+            return
+
+        case UserStates.waiting_for_city:
+            await state.set_state(UserStates.choosing_mode)
+            await message.answer("Выберите режим поиска:", reply_markup=inline.inline_functions)
+
+        case UserStates.selecting_uni:
+            await state.set_state(UserStates.waiting_for_city)
+            await message.answer("Введите название города:", reply_markup=kb_back)
+
+        case UserStates.selecting_spec:
+            await state.set_state(UserStates.waiting_for_city)
+            await message.answer("Введите название города:", reply_markup=kb_back)
+
 
 
 # Хендлер для выбора варианта через клаву
 @router.callback_query(UserStates.choosing_mode)
 async def input_city(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
-    data = await state.get_data()
-    counter = data.get("counter", 0)  # получаем текущее значение
-    counter += 1
-    await state.update_data(counter=counter)  # сохраняем новое значение
+
     await state.update_data(choosing_mode=callback_query.data) # Дата полученная с инлайна
-    await state.set_state(STATES[counter])
-    await callback_query.message.edit_text("Введите полное название города")
+    await state.set_state(UserStates.waiting_for_city)
+    await callback_query.message.delete()  # Удаляем сообщение с выбором режима
+    await callback_query.message.answer(  # Отправляем новое сообщение
+        "Введите полное название города",
+        reply_markup=kb_back  # Тут Reply клавиатура сработает
+    )
 
 
 # Хендлер для ввода города
@@ -54,8 +79,8 @@ async def input_city(message: Message, state: FSMContext):
         await message.answer("Вы ввели неправильные данные\nПопробуйте ещё раз")
         return
 
-    data = await state.get_data()   # Получаем данные по состояниям
-
+    data = await state.get_data() # Получаем данные по состояниям
+    await message.answer("Поиск данных...", reply_markup=kb_back)
     # Вывод определённой клавиатуры (зависит от выбора режима при "/start")
     if data["choosing_mode"] == "Вуз по специальности":
         await state.set_state(UserStates.selecting_spec)
@@ -67,6 +92,7 @@ async def input_city(message: Message, state: FSMContext):
                 item_type="spec",
             )
         )
+
     elif data["choosing_mode"] == "Специальность по вузу":
         await state.set_state(UserStates.selecting_uni)
         await message.answer(
@@ -77,6 +103,7 @@ async def input_city(message: Message, state: FSMContext):
                 item_type="uni",
             )
         )
+
 
 
 # Хендлер для пагинации по списку универов/специальностей
@@ -172,8 +199,3 @@ async def unis_carousel(callback_query: CallbackQuery, callback_data: CardsCallb
         pass
 
 
-@router.message(F.text == "Назад")
-async def back(message: Message, state: FSMContext):
-    await message.answer("Пошёл нахуй")
-
-    pass
