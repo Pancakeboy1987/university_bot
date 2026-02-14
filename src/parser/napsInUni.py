@@ -1,4 +1,5 @@
 import requests
+import pprint
 from bs4 import BeautifulSoup
 from __init__ import headers
 
@@ -51,6 +52,13 @@ def requestForInfo(spec_id):
     print(f'Средний  проходной балл на бюджет - {score[1].get_text()}')
     print(f'Кол-во бюджетных мест - {score[2].get_text()}')
     print(f'Средний  балл поступивших на бюджет - {score[3].get_text()}\n')
+    program_n = {
+        "mid_entry_score": {score[1].get_text()},
+        "budget_places": {score[2].get_text()},
+        "subjects": {subjects[0].get_text(), subjects[1].get_text(), subjects[2].get_text(),subjects[3].get_text()},
+        "mid_score": {score[3].get_text()}
+    }
+    return program_n
 
 
 
@@ -66,17 +74,18 @@ def findSpecId(link):
     r = requests.get(link, headers=headers)
     soup = BeautifulSoup(r.text, "html.parser")
     spec_body = soup.find_all("div", class_="mobpaddcard")
+    program = []
 
     for spec in spec_body:
         spec_id = str(spec.find('span')['id'])[11::]
-        requestForInfo(spec_id)
-
+        spec_num = str(spec)
+        spec_num = requestForInfo(spec_id)
+        program.append(spec_num)
+    pprint.pprint(program, indent=4, width=40)
 
 
 ### Сюда вставляем ссылки которые получаем из findNapsInUni
 findSpecId('https://tabiturient.ru/vuzu/rudn/proxodnoi?1002')
-
-
 
 
 
