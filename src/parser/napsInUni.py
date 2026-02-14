@@ -25,12 +25,15 @@ def findNapsInUni(vuz):
     soup = BeautifulSoup(r.text, "html.parser")
     spec_body = soup.find('div', class_='p40 pm40')
     specs = spec_body.find_all('a')
+    rudn = {}
     for spec in specs:
         link = spec['href']
         code = str(spec.find('span',class_='font11'))[21:44]
         name = str(spec.find('b'))[3:-4]
         print('Ссылка - ' + link + ',  - ' + code + ' - ' + name)
         print()
+        rudn[code[1::] + ' - ' + name] = []
+    pprint.pprint(rudn)
 
 
 print(findNapsInUni('rudn'))
@@ -47,7 +50,9 @@ def requestForInfo(spec_id):
     soup = BeautifulSoup(r.text, "html.parser")
     blocks = soup.find_all('div', class_='p40 pm40')
     subjects = blocks[1].find_all('b', class_='font11')
+    sub_len = (len(subjects))
     score = blocks[2].find_all('span', class_='font3')
+    score_len = (len(score)) 
     print(f'Список предметов егэ для поступления: {subjects[0].get_text()}, {subjects[1].get_text()}, {subjects[2].get_text()}, {subjects[3].get_text()}')
     print(f'Средний  проходной балл на бюджет - {score[1].get_text()}')
     print(f'Кол-во бюджетных мест - {score[2].get_text()}')
@@ -85,7 +90,7 @@ def findSpecId(link):
 
 
 ### Сюда вставляем ссылки которые получаем из findNapsInUni
-findSpecId('https://tabiturient.ru/vuzu/rudn/proxodnoi?1002')
+findSpecId('https://tabiturient.ru/vuzu/rudn/proxodnoi?1020')
 
 
 
