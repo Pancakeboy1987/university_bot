@@ -52,8 +52,8 @@ def requestForInfo(spec_id):
     subjects = blocks[1].find_all('b', class_='font11')
     sub_len = (len(subjects))
     score = blocks[2].find_all('span', class_='font3')
-    score_len = (len(score)) 
-    print(f'Список предметов егэ для поступления: {subjects[0].get_text()}, {subjects[1].get_text()}, {subjects[2].get_text()}, {subjects[3].get_text()}')
+    score_len = (len(score))
+    print(f'Список предметов егэ для поступления: {[subjects[i].get_text() for i in range(sub_len)]}')
     print(f'Средний  проходной балл на бюджет - {score[1].get_text()}')
     print(f'Кол-во бюджетных мест - {score[2].get_text()}')
     print(f'Средний  балл поступивших на бюджет - {score[3].get_text()}\n')
@@ -90,7 +90,7 @@ def findSpecId(link):
 
 
 ### Сюда вставляем ссылки которые получаем из findNapsInUni
-findSpecId('https://tabiturient.ru/vuzu/rudn/proxodnoi?1020')
+findSpecId('https://tabiturient.ru/vuzu/rudn/proxodnoi?1019')
 
 
 
