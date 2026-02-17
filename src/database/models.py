@@ -19,10 +19,7 @@ class City(Base):
     #здесь записываем имеющиеся параметры
     id = Column(Integer, primary_key=True)
     full_name = Column(String, unique=True)
-    name = Column(String,unique=True)
-
     ##здесь у нас лежат зависимости
-
     ## у нас универы и направления связаны с городами и могут брать данные
     universities = relationship("University", back_populates="city")
     programs = relationship("Program", back_populates="city")
@@ -33,6 +30,7 @@ class University(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    slug = Column(String) # Сокращение для упрощенного поиска
     ## здесь мы id для универа берем с city, поэтому когда будем делать запрос
     ## и искать вузы по городам - мы получим только с id Москвы
     city_id = Column(Integer, ForeignKey("cities.id"))
@@ -48,6 +46,9 @@ class Program(Base):
     name = Column(String)
     university_id = Column(Integer, ForeignKey("universities.id"))
     city_id = Column(Integer, ForeignKey("cities.id"))
+    min_score = Column(String)
+    budget_places = Column(String)
+    subjects = Column(String)
 
     university = relationship("University", back_populates="programs")
     city = relationship("City", back_populates="programs")
