@@ -1,8 +1,14 @@
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, relationship, sessionmaker
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-base_engine = create_engine('sqlite:///database.db', echo=True)
+
+DB_PATH = "/Users/nikita/Desktop/frontend road/projects/University bot/database.db"
+
+base_engine = create_engine(f'sqlite:////{DB_PATH}', echo=True) # Оставим echo=True пока проверяем
 
 class Base(DeclarativeBase):
     pass
@@ -19,8 +25,7 @@ class City(Base):
     #здесь записываем имеющиеся параметры
     id = Column(Integer, primary_key=True)
     full_name = Column(String, unique=True)
-    ##здесь у нас лежат зависимости
-    ## у нас универы и направления связаны с городами и могут брать данные
+
     universities = relationship("University", back_populates="city")
     programs = relationship("Program", back_populates="city")
 

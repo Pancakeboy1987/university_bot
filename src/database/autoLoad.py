@@ -1,9 +1,7 @@
 from sqlalchemy.orm import Session
-# Замени 'models' на название твоего файла с моделями, если он называется иначе
+
 from models import SessionLocal, City, University, Program, base_engine, Base
 
-# Импортируем твой реестр со всеми вузами
-# Замени 'dataset' на название файла, где лежит universities_registry
 from textData import universities_registry
 
 
@@ -12,10 +10,10 @@ def clean_set_value(value_set):
     if not value_set or not isinstance(value_set, set):
         return "Нет данных"
 
-    # Достаем первый (и единственный) элемент из множества
+
     val = list(value_set)[0]
 
-    # Превращаем в строку, убираем пробелы по краям и удаляем переносы строк \n
+
     clean_str = str(val).strip().replace('\n', ' ').replace('  ', ' ')
 
     if not clean_str:

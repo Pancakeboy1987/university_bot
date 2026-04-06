@@ -12,6 +12,9 @@ from src.bot.states.user_states import UserStates, STATES
 from src.bot.keyboards.list_of_unis_and_specs import list_of_specs, list_of_unis
 from src.bot.keyboards.reply import kb_back
 
+from sqlalchemy.orm import Session
+from src.database.models import  City, University, Program, SessionLocal
+
 
 router = Router()
 
@@ -116,8 +119,21 @@ async def input_city(message: Message, state: FSMContext):
         await message.answer("Город не найден в базе. Попробуйте: Москва, Санкт-Петербург")
         return
 
+    with SessionLocal() as session:
+
+        city_name_input = message.text.strip().capitalize()
+        city = session.query(City).filter(City.full_name == city_name_input).first()
+
+        if not city:
+            await message.answer("Город не найден в базе. Попробуйте: Москва, Санкт-Петербург и т.д.")
+            return
+
     # Сохраняем город
-    await state.update_data(waiting_for_city=message.text)
+    await state.update_data(waiting_for_city=city.full_name, city_id=city.id)
+    data = await state.get_data()
+    mode = data.get("choosing_mode")
+
+    await message.answer(f"Поиск в городе {city.full_name}...", reply_markup=kb_back)
 
     # Получаем режим, который выбрали ранее
     data = await state.get_data()
@@ -139,6 +155,19 @@ async def input_city(message: Message, state: FSMContext):
 
     elif mode == "Специальность по вузу":
         await state.set_state(UserStates.selecting_uni)
+
+        # Достаем все вузы для этого города из БД
+        unis_in_city = session.query(University).filter(University.city_id == city.id).all()
+
+        if not unis_in_city:
+            await message.answer("В этом городе пока нет добавленных вузов.")
+            return
+
+        # Формируем список словарей для клавиатуры и сохраняем в state
+        # Важно: aiogram клавиатуре нужны простые типы (dict), а не объекты БД
+        list_of_unis = [{"id": u.id, "name": u.name} for u in unis_in_city]
+        await state.update_data(current_unis_list=list_of_unis)
+
         await message.answer(
             "Выберите университет:",
             reply_markup=await inline.build_pagination_keyboard(
@@ -156,12 +185,18 @@ async def input_city(message: Message, state: FSMContext):
 # Пагинация (листаем страницы списка)
 @router.callback_query(NavigationCallback.filter(F.item_type.in_(["uni", "spec"])))
 async def paginate_list(callback_query: CallbackQuery, callback_data: NavigationCallback, state: FSMContext):
-    # Определяем, какой список листаем
-    current_items = list_of_specs if callback_data.item_type == "spec" else list_of_unis
+
+    data = await state.get_data()
+
+    if callback_data.item_type == "uni":
+        current_items = data.get("current_unis_list", [])
+    else:
+        current_items = data.get("current_specs_list", [])
 
     if not current_items:
         await callback_query.answer("Данные не найдены")
         return
+
 
     keyboard = inline.build_pagination_keyboard(
         items=current_items,
@@ -184,37 +219,72 @@ async def select_item(callback_query: CallbackQuery, callback_data: SelectionCal
 
     await state.set_state(UserStates.browsing_unis_cards)
 
-    item_id = callback_data.item_id
+    item_id = int(callback_data.item_id)  # ID выбранного элемента (вуза или проги)
     item_type = callback_data.item_type
 
     if item_type == "uni":
-        # Выбрали вуз -> показываем его специальности
-        text = f"Специальности в вузе ID {item_id}:"
-        # Тут должна быть логика фильтрации специальностей для этого вуза
-        # filtered_specs = get_specs_for_uni(item_id)
 
+        with SessionLocal() as session:
+            uni = session.query(University).get(item_id)
+            programs = session.query(Program).filter(Program.university_id == item_id).all()
+            if not programs:
+                await callback_query.answer("Для этого вуза не найдены направления.", show_alert=True)
+                return
+
+            text = f"🎓 <b>{uni.name}</b>\nДоступные направления:"
+
+            # Превращаем объекты БД в список словарей
+            # Сохраняем и название, и баллы, чтобы потом показать карточку
+            list_of_specs = [
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "score": p.min_score,
+                    "places": p.budget_places,
+                    "subjects": p.subjects
+                }
+                for p in programs
+            ]
+
+            # Сохраняем в state, чтобы пагинация специальностей работала
+            await state.update_data(current_specs_list=list_of_specs)
+
+        # Выводим клавиатуру с направлениями
         await callback_query.message.edit_text(
             text,
+            parse_mode="HTML",
             reply_markup=await inline.build_pagination_keyboard(
-                items=list_of_specs,  # Здесь должен быть отфильтрованный список
+                items=list_of_specs,
                 page=0,
-                item_type="spec_card",  # Новый тип для пагинации внутри карточки
+                item_type="spec",
                 items_per_page=5
             )
         )
 
     elif item_type == "spec":
-        # Выбрали специальность -> показываем вузы
-        text = f"Вузы со специальностью ID {item_id}:"
+        # ПОЛЬЗОВАТЕЛЬ ВЫБРАЛ КОНКРЕТНОЕ НАПРАВЛЕНИЕ -> ПОКАЗЫВАЕМ КАРТОЧКУ (ДЕТАЛИ)
+        data = await state.get_data()
+        specs_list = data.get("current_specs_list", [])
+
+        # Ищем выбранное направление в сохраненном списке по ID
+        selected_spec = next((spec for spec in specs_list if spec["id"] == item_id), None)
+
+        if selected_spec:
+            text = (
+                f"📚 <b>{selected_spec['name']}</b>\n\n"
+                f"📊 <b>Проходной балл:</b> {selected_spec['score']}\n"
+                f"👥 <b>Бюджетных мест:</b> {selected_spec['places']}\n"
+                f"📝 <b>Предметы ЕГЭ:</b> {selected_spec['subjects']}"
+            )
+        else:
+            text = "Ошибка загрузки данных о направлении."
 
         await callback_query.message.edit_text(
             text,
-            reply_markup=await inline.build_pagination_keyboard(
-                items=list_of_unis,
-                page=0,
-                item_type="uni_card",
-                items_per_page=1
-            )
+            parse_mode="HTML",
+
+            reply_markup=await inline.build_pagination_keyboard(items=[], page=0, item_type="empty")
+
         )
 
     await callback_query.answer()

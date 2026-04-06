@@ -74,3 +74,7 @@ def findUnisInCity(links_list):
 ###вызов функции присылает все вузы по городам
 
 findUnisInCity(links_list=allCitiesList())
+
+
+##### нужно вызвать функцию parse all university
+##### а та функция соответственно должна загрузить все в текст дата

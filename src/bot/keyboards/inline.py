@@ -23,7 +23,7 @@ async def build_pagination_keyboard(items: list, page: int, item_type: str, item
     if items_per_page > 1:
         for item in current_page_items:
             builder.button(
-                text=item["title"],
+                text=item.get("title") or item.get("name"),
                 callback_data=SelectionCallback(item_type=item_type, item_id=item["id"])
             )
 
