@@ -163,7 +163,7 @@ def parse_whole_university(vuz_slug):
 # --- ЗАПУСК ---
 
 # Запускаем полный цикл по вузу (например, rudn)
-final_data = parse_whole_university('rudn')
+final_data = parse_whole_university('altspu')
 
 print("\n--- ИТОГОВЫЙ РЕЗУЛЬТАТ ---")
 pprint.pprint(final_data)

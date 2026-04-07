@@ -1,6 +1,8 @@
 import asyncio
 import os
-
+import aiohttp
+import socket
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 from src.bot.handlers import handlers_router as router
@@ -8,8 +10,8 @@ from src.bot.handlers import handlers_router as router
 
 async def main():
     load_dotenv()   # Загрузка переменных окружения из .env
-
-    bot = Bot(token=os.getenv("TOKEN"))  # Получение токена
+    session = AiohttpSession(proxy="socks5://127.0.0.1:2080")
+    bot = Bot(token=os.getenv("TOKEN"), session=session)  # Получение токена
     dp = Dispatcher()
 
     dp.include_router(router)   # Подключение роутера
