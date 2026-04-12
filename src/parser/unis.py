@@ -64,10 +64,12 @@ def findUnisInCity(links_list):
                 short_name = short_name_tag.strip()
                 full_name = long_name_tag.strip()
 
-                print(f"Кратко: {short_name}")
-                print(f"Полное: {full_name}")
-                print(f"Название для ссылки - {eng_name}")
-                print(f"ID = {idVuz}\n\n")
+                print(f"'city': '{city}',")
+                print(f"'name': '{full_name}',")
+                print(f"'slug':'{eng_name}',")
+                print(f"'data':{eng_name}_data,")
+                print()
+                #print(f"ID = {idVuz}\n\n")
 
         print("-" * 30)
 

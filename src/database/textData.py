@@ -763,9 +763,9 @@ rudn_data = {'01.03.01 | Бакалавриат - Математика': [{   'b
                                                                                                          'Русский '
                                                                                                          'язык'}}]}
 
-mgu_data = {}
+msu_data = {}
 
-kfu_data = {}
+
 
 
 universities_registry = [
@@ -780,13 +780,92 @@ universities_registry = [
         "city": "Москва",
         "name": "Московский государственный университет",
         "slug": "msu",
-        "data": mgu_data
+        "data": msu_data
     },
     {
-        "city": "Казань", # Пример другого города
-        "name": "Казанский федеральный университет",
-        "slug": "kfu",
-        "data": kfu_data
+        "city": "altayskykray",
+        "name": "Алтайский государственный университет",
+        "slug":"altsu",
+        "data": altsu_data,
     },
+    {
+        "city": "altayskykray",
+        "name": "Алтайский государственный педагогический университет",
+        "slug":"altspu",
+        "data":"altspu_data",
+    },
+    {
+        'city': 'altayskykray',
+        'name': 'Алтайский государственный технический университет имени И. И. Ползунова',
+        'slug':'altstu',
+        'data':altstu_data,
+    },
+    {'  city': 'altayskykray',
+        'name': 'Алтайский государственный медицинский университет',
+        'slug':'asmu',
+        'data':asmu_data,
+     },
+    {
+        'city': 'altayskykray',
+        'name': 'Алтайский государственный гуманитарно-педагогический университет имени В.М. Шукшина',
+        'slug':'bigpibiysk',
+        'data':bigpibiysk_data,
+    },
+    {
+        'city': 'altayskykray',
+        'name': 'Алтайский государственный аграрный университет',
+        'slug':'asau',
+        'data':asau_data,
+
+    },
+    {
+        'city': 'altayskykray',
+        'name': 'Алтайский государственный институт культуры',
+        'slug':'altgaki',
+        'data':altgaki_data,
+    },
+    {
+        'city': 'altayskykray',
+        'name': 'Бийский технологический институт (филиал) Алтайского государственного технического университета имени И. И. Ползунова',
+        'slug':'btisecna',
+        'data':btisecna_data,
+    },
+    {
+        'city': 'altayskykray',
+        'name': 'Рубцовский индустриальный институт (филиал) Алтайского государственного технического университета имени И. И. Ползунова',
+        'slug':'rubinst',
+        'data':rubinst_data,
+    },
+    {
+        'city': 'altayskykray',
+        'name': 'Алтайский филиал Финансового Университета при Правительстве Российской Федерации',
+        'slug':'fa_barnaul',
+        'data':fa_barnaul_data,
+    },
+    {
+        'city': 'altayskykray',
+        'name': 'Рубцовский институт (филиал) Алтайского государственного университета',
+        'slug':'rb_asu',
+        'data':rb_asu_data,
+    },
+    {
+        'city': 'altayskykray',
+        'name': 'Филиал Алтайского государственного университета в г. Белокурихе',
+        'slug':'belokur_asu',
+        'data':belokur_asu_data,
+    },
+    {
+        'city': 'altayskykray',
+        'name': 'Филиал Алтайского государственного университета в г. Бийске',
+        'slug':'biysk_asu',
+        'data':biysk_asu_data,
+    },
+    {
+        'city': 'altayskykray',
+        'name': 'Бийский филиал Алтайского государственного педагогического университета им. В. М. Шукшина',
+        'slug':'biysk.altspu',
+        'data':biysk.altspu_data,
+    }
+    
     # ... сюда добавляем все 100 вузов ...
 ]
