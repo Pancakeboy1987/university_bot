@@ -766,6 +766,10 @@ rudn_data = {'01.03.01 | Бакалавриат - Математика': [{   'b
 msu_data = {}
 
 
+altsu_data = {
+    
+}
+
 
 
 universities_registry = [

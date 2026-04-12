@@ -115,7 +115,7 @@ async def confirm_mode(callback_query: CallbackQuery, state: FSMContext):
 @router.message(UserStates.waiting_for_city)
 async def input_city(message: Message, state: FSMContext):
 
-    if message.text not in ["Москва", "Санкт-Петербург", "Набережные Челны"]:
+    if message.text not in ["Москва", "Санкт-Петербург", "Набережные Челны, Алтайский край, Мурманск"]:
         await message.answer("Город не найден в базе. Попробуйте: Москва, Санкт-Петербург")
         return
 
@@ -163,8 +163,7 @@ async def input_city(message: Message, state: FSMContext):
             await message.answer("В этом городе пока нет добавленных вузов.")
             return
 
-        # Формируем список словарей для клавиатуры и сохраняем в state
-        # Важно: aiogram клавиатуре нужны простые типы (dict), а не объекты БД
+
         list_of_unis = [{"id": u.id, "name": u.name} for u in unis_in_city]
         await state.update_data(current_unis_list=list_of_unis)
 
@@ -213,7 +212,7 @@ async def paginate_list(callback_query: CallbackQuery, callback_data: Navigation
     await callback_query.answer()
 
 
-# Выбор КОНКРЕТНОГО элемента (проваливаемся вглубь)
+# Выбор КОНКРЕТНОГО элемента
 @router.callback_query(SelectionCallback.filter())
 async def select_item(callback_query: CallbackQuery, callback_data: SelectionCallback, state: FSMContext):
 
